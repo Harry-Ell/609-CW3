@@ -110,6 +110,7 @@ class GenericMDP:
         V_k = {}   
         k = 0
         while k < self.max_iter:
+            print(f'now on iteration {k}', flush = True)
             V_k_minus_1 = V_k.copy()
             for state in self.states:
                 V_k[state] = self._bellmans_eq(state = state, values_dict = V_k_minus_1)
@@ -120,6 +121,8 @@ class GenericMDP:
                 if value_change < self.tolerance:
                     print(f'Tolerance of {self.tolerance} was met after {k} iterations. Terminating now.')
                     return V_k
+                else:
+                    print(f'On iteration {k}, current tolerance is {value_change}', flush = True)
         print(f'Tolerance of {self.tolerance} was not met after {self.max_iter} iterations. Terminating now.')
         return V_k
     
