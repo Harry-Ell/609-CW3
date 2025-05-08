@@ -10,4 +10,5 @@ Files:
 - `probability_generator.py` Helper function for above script. This populates the probability data structure which the above script uses.
 - `rewards_generator.py` Helper function for above script. This populates the rewards data structure which the above script uses.
 - `brute_force_sol.py` Calling all the above functions, and saves the output to a .pkl file.
+- `brute_force_sol.pkl` Pickle file which contains the optimal policy. 
 - `solution_analysis_bf.ipynb` Notebook for performing exploratory data analysis on this solution. 
