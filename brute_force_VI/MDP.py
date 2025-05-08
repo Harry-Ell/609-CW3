@@ -28,73 +28,58 @@ class GenericMDP:
         self.max_iter = max_iterations
         self.rewards_dict = rewards
 
+    def _bellmans_eq(self, state: tuple, values_dict: dict, extract_policy=False) -> float:
+        i, j, k = state
+        # start by checking if we have already finished, if so the value should be 1 if we won
+        # and 0 if we have lost
+        if state[1] >= self.goal_state or state[0] >= self.goal_state:
+            return 1.0 if state[1] >= self.goal_state else 0.0
 
-
-    def __bellmans_eq(self, state:tuple, values_dict:dict, extract_policy:bool = False)->float:
-        '''
-        This is a generic implementation of the Bellmans equation as found in textbook 
-        linked in the repository. 
-
-        Args:
-            state (tuple): Current state for which we are updating the value of .
-            values_dict (dict): Dictionary of all of the current values.
-            extract_policy (bool): Flag to determine if you are ready to learn the policy. 
-                this is only called at the end of the process to minimise wasted computation. 
-
-        Returns:
-            V_k (float): Updated value of V_k
-
-        '''
-
+        # as before 
         action_space = len(self.actions)
-        V_k = np.zeros(action_space) 
+        V_k = np.zeros(action_space)
 
-        for action in range(action_space):
-            # this must be one scary looking summation
-            V_k[action] = sum(self.probabilities[state][action][s_prime] * \
-                              (self.rewards_dict.get(state, {}).get(action, {}).get(s_prime,0) + \
-                              self.discount_rate * values_dict.get(s_prime, 0)) \
-                              for s_prime in self.probabilities[state][action])
+        # outer loop takes us through all actions (roll, dont roll)
+        for a in range(action_space):
+            ev = 0.0
+            for s_prime, prob in self.probabilities[state][a].items():
+                # Reward is only defined at certain states. Incase it isnt, we will stack .get methods 
+                reward = self.rewards_dict.get(state, {}).get(a, {}).get(s_prime, 0)
+
+                # logic to passover the turn. Do we choose to not roll, or do we roll and end up with 
+                # 0 points unbanked, which corresponds to having rolled a 1 due to the structure of 
+                # the probabilities dict 
+                turn_passes = ((a == 0) or (a == 1 and s_prime[2] == 0))
+                
+                ##############################################################################
+                ##################### LOGIC FOR FINDING VALUE OF NEXT STATES #################
+                ##############################################################################
+
+                # Again, we check if the game is over. if it is, then the next value we should see is the 
+                # reward for winning, or 0 
+                if state[1] >= self.goal_state or state[0] >= self.goal_state:
+                    next_val = 1.0 if state[1] >= self.goal_state else 0.0
+
+                elif turn_passes:
+                # if the game is not over, but the turns swap, then the value of the state you end up 
+                # in should (probably!) be the compliment of what your opponent would have been on?
+                    i, j, k = s_prime
+                    mirrored_state = (j, i, k)  # Should k be 0 here? I do not know. 
+                    next_val = 1.0 - values_dict.get(mirrored_state, 0.0)         
+                else:
+                    next_val = values_dict.get(s_prime, 0.0)              # still my turn
+                
+                # standard weighted average. 
+                ev += prob * (reward + self.discount_rate * next_val)
+
+            # update value with ev of being in that state
+            V_k[a] = ev
+
+        # some simple logic which is only triggered after tolerance has been obtained. 
         if extract_policy == False:
             return max(V_k)
         else:
             return np.where(V_k == max(V_k))
-
-    def _bellmans_eq(self, state: tuple, values_dict: dict, extract_policy=False) -> float:
-        i, j, k = state
-        V = values_dict
-        if self._is_terminal(state):
-            return self._terminal_value(state)
-
-        action_space = len(self.actions)
-        Q = np.zeros(action_space)
-
-        for a in range(action_space):
-            ev = 0.0
-            for s_prime, prob in self.probabilities[state][a].items():
-                reward = self.rewards_dict.get(state, {}).get(a, {}).get(s_prime, 0)
-
-                # ---------- did the turn pass? ----------
-                turn_passes = (
-                    (a == 0)                                    # stick
-                    or (a == 1 and s_prime[2] == 0)             # hit & rolled a 1
-                )
-
-                if self._is_terminal(s_prime):
-                    next_val = self._terminal_value(s_prime)
-
-                elif turn_passes:
-                    # mirror the board: it’s now opponent’s turn
-                    mirror = self._swap(s_prime)
-                    next_val = 1.0 - V.get(mirror, 0.0)         # zero-sum complement
-                else:
-                    next_val = V.get(s_prime, 0.0)              # still my turn
-
-                ev += prob * (reward + self.discount_rate * next_val)
-
-            Q[a] = ev
-
-        return np.argmax(Q) if extract_policy else np.max(Q)
 
 
     def _value_iteration(self)-> dict:
@@ -141,20 +126,7 @@ class GenericMDP:
         policy = {}
         for state in self.states:
             policy[state] = self._bellmans_eq(state = state, values_dict = Values, extract_policy=True)
-            #print(f'If in state: {state}, the optimal action is: {self.actions[int(policy[state])]}')
         return policy
-    
-    def _is_terminal(self, s: tuple) -> bool:
-        goal = self.goal_state        
-        return s[1] >= goal or s[0] >= goal   # j (my score) or i (opp score)
-
-    def _terminal_value(self, s: tuple) -> float:
-        # value is 1 if I’ve already won, 0 if opponent has
-        return 1.0 if s[1] >= self.goal_state else 0.0
-
-    def _swap(self, s: tuple) -> tuple:
-        i, j, k = s
-        return (j, i, k)                      # swap scores, leave turn-total
 
     def __call__(self):
         '''
