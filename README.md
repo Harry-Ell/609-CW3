@@ -13,4 +13,8 @@ Files:
 - `brute_force_sol.pkl` Pickle file which contains the optimal policy. 
 - `solution_analysis_bf.ipynb` Notebook for performing exploratory data analysis on this solution. 
 
-test test
+### layered_VI
+An initial layered value iteration approach to solving the PIG problem. This aims to replicate the methods used in the paper to increase efficiency and better-test reproducibility.
+Files:
+- `layered_value_iteration.ipynb` A Jupyter Notebook file containing the function to generate the optimal policy, and a function for plotting the decision surface.
+
