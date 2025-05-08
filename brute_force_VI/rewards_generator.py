@@ -19,8 +19,8 @@ class Rewarder:
         for i in range(self.game_size+1):
             for j in range(self.game_size+1):
                 for k in range(self.game_size+1):
-                    if not j + k > self.game_size + 2 * self.dice_size: # some reasonable tolerance
-                        upper_dictionary[(i,j,k)] = self._lower_dict_generator(i,j,k)
+                    # if not j + k > self.game_size + 2 * self.dice_size: # some reasonable tolerance
+                    upper_dictionary[(i,j,k)] = self._lower_dict_generator(i,j,k)
         return upper_dictionary
 
     def _lower_dict_generator(self, 
