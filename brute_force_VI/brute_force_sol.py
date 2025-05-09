@@ -30,5 +30,5 @@ value_iteration = GenericMDP(states=states,
                  tolerance = 1e-6)()
 
 policy = value_iteration[0]
-with open('brute_force_solution.pkl', 'wb') as f:
+with open('brute_force_solution_3.pkl', 'wb') as f:
     pickle.dump(policy, f)
