@@ -92,7 +92,7 @@ def _layered_vi(V, policy, target_score, die_sides, max_turn, epsilon):
                 converged = True
 
 # wrapper function to call precompiled other functions
-def pig_layered_value_iteration_numba(
+def pig_layered_value_iteration(
     target_score=15,
     die_sides=6,
     max_turn=15,
