@@ -107,7 +107,7 @@ if __name__ == "__main__":
     die_size = 6
     target_score = 100
     max_turn = 100
-    V, policy = pig_layered_value_iteration_numba(target_score=target_score, 
+    V, policy = pig_layered_value_iteration(target_score=target_score, 
                                                   die_sides=die_size, 
                                                   max_turn=max_turn, 
                                                   epsilon=1e-6)
