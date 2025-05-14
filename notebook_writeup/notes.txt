@@ -1,2 +1,0 @@
-Here is where we will put our notebook write up which calls all the other functions. In order to keep this nice looking, we will import modules into this area of the code without having to run code inside of this 
-
