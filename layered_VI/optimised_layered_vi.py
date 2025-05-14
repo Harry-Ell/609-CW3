@@ -111,10 +111,14 @@ if __name__ == "__main__":
                                                   die_sides=die_size, 
                                                   max_turn=max_turn, 
                                                   epsilon=1e-6)
-    policy_dict = {}
+    policy_dict, value_dict = {}, {}
     for player_score in range(0,101):
         for opponent_score in range(0,101):
             for turn_total in range(0,101):
                 policy_dict[(player_score, opponent_score, turn_total)] = policy[player_score, opponent_score, turn_total]
+                value_dict[(player_score, opponent_score, turn_total)] = V[player_score, opponent_score, turn_total]
     with open('layered_VI/policy_dictionary.pkl', 'wb') as f:
-        pickle.dump(policy, f)
+        pickle.dump(policy_dict, f)
+
+    with open('layered_VI/value_dictionary.pkl', 'wb') as f:
+        pickle.dump(value_dict, f)
