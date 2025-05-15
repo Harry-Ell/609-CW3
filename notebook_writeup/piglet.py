@@ -3,7 +3,16 @@ Billies code for the simplified game of piglet.
 '''
 
 import matplotlib.pyplot as plt
+import matplotlib as mpl
 import copy
+import sys
+
+# this makes imports more reliable when importing from a variety of places.
+sys.path.append('..')
+
+# some nice and optional formatting tools
+mpl.rc_file('pickle_and_config_files/matplotlibrc')
+
 
 class PigletSolver:
     '''
@@ -42,31 +51,34 @@ class PigletSolver:
         else:
             return self.p[i][j][k]
 
-    def _output_hold_values(self):
-        for i in range(self.goal):
-            row = []
-            for j in range(self.goal):
-                k = 0
-                while k < self.goal - i and self.flip[i][j][k]:
-                    k += 1
-                row.append(str(k))
-            print(' '.join(row))
-            
-    # def _print_state(self):
-    #     '''
-    #     is this a redundant function? 
-    #     '''
-    #     print("Current state probabilities (p[i][j][k]):")
-    #     for i in range(self.goal):
-    #         for j in range(self.goal):
-    #             for k in range(self.goal - i):
-    #                 print(f"p[{i}][{j}][{k}] = {self.p[i][j][k]:.4f}")
-    #     print("-" * 40)
-
     def _return_convergence_plots(self):
-        pass
+        '''
+        
+        '''
+        valid_states = [(i, j, k) for i in range(self.goal)
+                                for j in range(self.goal)
+                                for k in range(self.goal - i)]
+
+        # Create a plot for each state
+        plt.figure(figsize=(10, 6))
+
+        for state in valid_states:
+            i, j, k = state
+            values = [log[i][j][k] for log in self.iteration_logs]
+            plt.plot(values, label=f"({i},{j},{k})")
+
+        plt.xlabel("Iteration")
+        plt.ylabel("Win Probability")
+        plt.title("State Value Convergence in Piglet (goal=2)")
+        plt.legend(title="State (i,j,k)", bbox_to_anchor=(1.05, 1), loc='upper left')
+        plt.tight_layout()
+        plt.grid(True)
+        plt.show()
 
 
-    def __call__(self, ):
-        solved_game = self.value_iterate()
-        self._return_convergence_plots()
+    def __call__(self, convergence_plots = False):
+        # self.goal = goal
+        # self.epsilon = epsilon
+        self._value_iterate()
+        if convergence_plots:
+            self._return_convergence_plots()
