@@ -73,9 +73,9 @@ class Opponents:
 
         # supplement to make them hold when they could win 
         for i in range(101):
-            for k in range(101):
-                if i + k >= 100:
-                    policy[i, :, k] = 0
+             for k in range(101):
+                 if i + k >= 100:
+                     policy[i, :, k] = 0
         return policy
 
 
