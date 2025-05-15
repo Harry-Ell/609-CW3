@@ -4,13 +4,25 @@ the paper. We make use of numba to precompile for loops and eliminate any
 python overhead for the loop computations
 '''
 
-import pickle
 import numpy as np
 from numba import njit
 
 
 @njit
-def _init_V_policy(target_score, max_turn):
+def _init_V_policy(target_score:int, 
+                   max_turn:int) -> tuple[np.array, np.array]:
+    '''
+    Helper function which will populate an array of possible states to which we 
+    update the values and policy for. We preallocate to reduce overhead from 
+    assigning extra memory
+
+    Arguments:
+        target_score:int = number of points up to which we play the game
+        max_turn:int = maximum number of unbanked points to keep the state space trim
+        
+    Returns: 
+        Outputs:tuple[np.array, np.array] = Empty value array and policy array  
+    '''
     V      = np.zeros((target_score+1, target_score+1, max_turn+1))
     policy = np.ones((target_score+1, target_score+1, max_turn+1), np.int64)
 
@@ -26,7 +38,31 @@ def _init_V_policy(target_score, max_turn):
 
 # Core layered value-iteration
 @njit
-def _layered_vi(V, policy, target_score, die_sides, max_turn, epsilon):
+def _layered_vi(V:np.array, 
+                policy:np.array, 
+                target_score:int, 
+                die_sides:int, 
+                max_turn:int, 
+                epsilon:float) -> tuple[np.array, np.array]:
+    '''
+    Layered backtracking function as done in the paper. 
+
+    @njit decorator precompiles this for loop for us for far more efficient computation. 
+    This reduces the run time by around a factor of 40.
+
+    Arguments:
+        V:np.array = Value function, object which is sequentially updated. 
+        policy:np.array = Policy array which can be extracted from V
+        target_score:int = number of points up to which we play the game
+        max_turn:int = maximum number of unbanked points to keep the state space trim
+        epsilon:float = Tolerance at which convergence is assumed to be reached, and 
+                        iteration of state space 
+        
+    Returns: 
+        Outputs:tuple[np.array, np.array] = Empty value array and policy array  
+    '''
+
+
     # small fixed array rather than Python list
     roll_values = np.arange(1, die_sides+1)
     roll_prob   = 1.0 / die_sides
@@ -90,6 +126,7 @@ def _layered_vi(V, policy, target_score, die_sides, max_turn, epsilon):
 
             if max_diff < epsilon:
                 converged = True
+    return V, policy
 
 # wrapper function to call precompiled other functions
 def pig_layered_value_iteration(
@@ -99,27 +136,5 @@ def pig_layered_value_iteration(
     epsilon=1e-6
 ):
     V, policy = _init_V_policy(target_score, max_turn)
-    _layered_vi(V, policy, target_score, die_sides, max_turn, epsilon)
+    V, policy = _layered_vi(V, policy, target_score, die_sides, max_turn, epsilon)
     return V, policy
-
-# if __name__ == "__main__":
-#     # running the layered value iteration function
-#     die_size = 6
-#     target_score = 100
-#     max_turn = 100
-#     V, policy = pig_layered_value_iteration(target_score=target_score, 
-#                                                   die_sides=die_size, 
-#                                                   max_turn=max_turn, 
-#                                                   epsilon=1e-6)
-#     policy_dict, value_dict = {}, {}
-#     for player_score in range(0,101):
-#         for opponent_score in range(0,101):
-#             for turn_total in range(0,101):
-#                 policy_dict[(player_score, opponent_score, turn_total)] = policy[player_score, opponent_score, turn_total]
-#                 value_dict[(player_score, opponent_score, turn_total)] = V[player_score, opponent_score, turn_total]
-
-#     with open('layered_VI/policy_dictionary.pkl', 'wb') as f:
-#         pickle.dump(policy_dict, f)
-
-#     with open('layered_VI/value_dictionary.pkl', 'wb') as f:
-#         pickle.dump(value_dict, f)

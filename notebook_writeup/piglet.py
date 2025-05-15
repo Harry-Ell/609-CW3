@@ -16,7 +16,7 @@ mpl.rc_file('pickle_and_config_files/matplotlibrc')
 
 class PigletSolver:
     '''
-    
+    some exposition here about what this does would be helpful if anyone has the time to do so . 
     '''
     def __init__(self, goal, epsilon):
         self.goal:int = goal
@@ -73,12 +73,15 @@ class PigletSolver:
         plt.legend(title="State (i,j,k)", bbox_to_anchor=(1.05, 1), loc='upper left')
         plt.tight_layout()
         plt.grid(True)
+        if self.savefig == True:
+            plt.savefig('piglet_convergence_plot.png')
         plt.show()
 
 
-    def __call__(self, convergence_plots = False):
+    def __call__(self, convergence_plots = False, savefig = False):
         # self.goal = goal
         # self.epsilon = epsilon
+        self.savefig = savefig
         self._value_iterate()
         if convergence_plots:
             self._return_convergence_plots()
