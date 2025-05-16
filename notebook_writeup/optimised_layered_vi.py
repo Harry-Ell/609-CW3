@@ -23,17 +23,18 @@ def _init_V_policy(target_score:int,
     Returns: 
         Outputs:tuple[np.array, np.array] = Empty value array and policy array  
     '''
-    V      = np.zeros((target_score+1, target_score+1, max_turn+1))
-    policy = np.ones((target_score+1, target_score+1, max_turn+1), np.int64)
+    V      = np.zeros((target_score+1, target_score+1, max_turn+1)) # initialise the values at 0
+    policy = np.ones((target_score+1, target_score+1, max_turn+1), np.int64) # initialise the policy to always roll
 
+    # set the terminal states
     for ps in range(target_score+1):
         for os in range(target_score+1):
             for t in range(max_turn+1):
                 if ps + t >= target_score:
-                    V[ps, os, t]      = 1.0
+                    V[ps, os, t]      = 1.0 # terminal states in which we win are given a reward (value) of 1
                     policy[ps, os, t] = 0
                 elif os >= target_score:
-                    V[ps, os, t] = 0.0
+                    V[ps, os, t] = 0.0 # terminal states in which we lose are given a reward (value) of 0
     return V, policy
 
 # Core layered value-iteration
@@ -64,7 +65,7 @@ def _layered_vi(V:np.array,
 
 
     # small fixed array rather than Python list
-    roll_values = np.arange(1, die_sides+1)
+    roll_values = np.arange(1, die_sides+1) # the possible roll values, based on the size of the die
     roll_prob   = 1.0 / die_sides
 
     # we go from high sums to low
@@ -78,11 +79,11 @@ def _layered_vi(V:np.array,
             p_max = min(target_score, score_sum)
             for ps in range(p_min, p_max+1):
                 os = score_sum - ps
-                if ps >= target_score or os >= target_score:
+                if ps >= target_score or os >= target_score: # the game has ended
                     continue
 
                 for t in range(max_turn+1):
-                    if ps + t >= target_score or os >= target_score:
+                    if ps + t >= target_score or os >= target_score: # the game has ended from our turn
                         continue
 
                     # --- ROLL value ---
@@ -90,23 +91,23 @@ def _layered_vi(V:np.array,
                     for k in range(roll_values.shape[0]):
                         r = roll_values[k]
                         if r == 1:
-                            roll_value += roll_prob * (1.0 - V[os, ps, 0])
+                            roll_value += roll_prob * (1.0 - V[os, ps, 0]) # the update to the roll value given that we roll a 0 (and lose our points)
                         else:
                             new_t = t + r
-                            if ps + new_t >= target_score:
-                                roll_value += roll_prob * 1.0
+                            if ps + new_t >= target_score: # the updates to the roll value given that we do not roll a 1
+                                roll_value += roll_prob * 1.0 # update with a value of 1 if we end up winning the game
                             elif new_t <= max_turn:
-                                roll_value += roll_prob * V[ps, os, new_t]
+                                roll_value += roll_prob * V[ps, os, new_t] # otherwise, update with the value of the state we end up in
 
                     # --- HOLD value ---
                     if ps + t >= target_score:
-                        hold_value = 1.0
+                        hold_value = 1.0 # the update to holding if we have already won
                     elif os >= target_score:
-                        hold_value = 0.0
+                        hold_value = 0.0 # the update to holding if we have lost
                     elif os + ps + t > score_sum:
-                        hold_value = 1.0 - V[os, ps + t, 0]
+                        hold_value = 1.0 - V[os, ps + t, 0] # the update to holding if we have won from this turn
                     else:
-                        hold_value = 0.0
+                        hold_value = 0.0 # otherwise, no update to the hold value
 
                     # choose best
                     if roll_value >= hold_value:
