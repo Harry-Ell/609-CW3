@@ -13,15 +13,6 @@ class Competition:
         self.reps = replications
         self.start_seed = seed
 
-    # def _turn(self, state, pol):
-    #     roll = 0
-    #     while (roll != 1 and pol[min(state[0], 100), min(state[1], 100), min(state[2], 100)] == 1): #while roll not one and policy is to roll
-    #         roll = np.random.randint(1, 7) #roll between 1 and 6
-    #         state = (state[0], state[1], state[2] + roll) #add the roll score to turn
-    #     if (roll != 1):
-    #         state = (state[0] + state[2], state[1], 0) #if final roll != 1, add turn to "your" score
-    #     return((state[1], state[0], 0)) #return state - flipping "your" and "your opponent" scores
-
     def _turn(self, state, pol):
         roll = 0
         while roll != 1 and pol[min(state[0], 100), min(state[1], 100), min(state[2], 100)] == 1:
@@ -36,8 +27,6 @@ class Competition:
 
         return (state[1], state[0], 0)  # Swap turns
 
-
-
     def _game(self, policy1, policy2):
         state = (0, 0, 0)
         turn_counter = 0
@@ -50,8 +39,7 @@ class Competition:
             turn_counter += 1
             if state[1] >= 100:
                 return 0
-
-            
+          
     def __call__(self):
         '''
         Call method by which we will interact with the class 
@@ -66,16 +54,16 @@ class Opponents:
     '''
     is a class really needed here? most likely not 
     '''
-    def hold_at_20():
+    def hold_at_n(n):
         policy = np.ones((100+1, 100+1, 100+1), np.int64)
-        # basic hold at 20 aspect of strat
-        policy[:, :, 20:] = 0
+        # basic hold at n aspect of strat
+        policy[:, :, n:] = 0
 
         # supplement to make them hold when they could win 
         for i in range(101):
-            for k in range(101):
-                if i + k >= 100:
-                    policy[i, :, k] = 0
+             for k in range(101):
+                 if i + k >= 100:
+                     policy[i, :, k] = 0
         return policy
 
 
