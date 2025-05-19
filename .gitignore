@@ -175,5 +175,3 @@ cython_debug/
 # PyPI configuration file
 .pypirc
 
-# additional files like pdfs, feel free to add anything here 
-*.pdf

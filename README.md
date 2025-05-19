@@ -92,7 +92,11 @@ Houses the final project and data sets used in analysis:
 
 - `plotting_tools.py` - Scripts for generating 3D isosurface plots of policy and value functions using Plotly.
 
-- `submission.ipynb` - The final submission notebook, where all figures and analysis given in the paper is reproduced. .
+- `submission.ipynb` - The final submission notebook, where all figures and analysis given in the paper is reproduced. 
+
+### `papers/` 
+- `Optimal_Play_of_the_Dice_Game_Pig.pdf` Original paper whose content we hope to repoduce.
+- `Report_on_reproducibility.pdf.pdf` Our outcomes from the application of their methods. 
 
 ### `tests/`
 Unit tests for ensuring correctness and reproducibility:
