@@ -88,18 +88,11 @@ def modelling_state_space(policy:np.array,
         policy:np.array = numpy array containing 0s (do not roll) and 1s (roll) for our players
         reachable:np.array = numpy array containing containing 0s (state not reached) and 1s (state reached) for player 2
         hold_probability:float = Probability that player 2 holds at random to simulate variety of opponents.
-
-    Returns: 
-        reachable:np.array = Final updated array of states that can be reached.     
     '''
-    for _ in range(iterations):
-        reachable = game_pig(policy, policy, reachable, hold_prob)
-    return reachable
 
 
 
-# Point of entry to script. We load in the policy, and allow population of the state
-# space by generating a variety of policies using different hold probabilities
+# Brute force mapping of reachable states 
 if __name__ == "__main__":
     # read pickle file
     with open('notebook_writeup/pickle_and_config_files/policy_dictionary.pkl', 'rb') as f:
@@ -107,10 +100,9 @@ if __name__ == "__main__":
 
     # initialising our reachable states array
     reachable_states = np.zeros((101, 101, 101))
-    for prob in [0, 0.01, 0.1, 0.2, 0.3, 0.4, 0.5]:
-        reachable_states = modelling_state_space(reachable_states, iterations = 10**6, hold_prob = prob)
+    for prob in [0, 0.01, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8]:
+        reachable_states = modelling_state_space(reachable_states, iterations = 10**8, hold_prob = prob)
         print(f'finished looping for p = {prob}', flush = True)
 
-    # write to pickle file in desired location
     with open('notebook_writeup/pickle_and_config_files/reachable_states.pkl', 'wb') as f:
-        pickle.dump(reachable_states, f)    
+        pickle.dump(reachable_states, f)
