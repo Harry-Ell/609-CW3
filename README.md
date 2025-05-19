@@ -1,6 +1,56 @@
 # STOR609 Coursework 3 Reproduction Study
 Pig is a simple dice game of chance, widely-studied in academic literature for its interesting probabilistic features. We have re‐examined and reproduced the results of such a paper by Todd W. Neller and Clifton G.M. Presser (2004). The aim of their paper is to find the optimal policy a player of the game Pig should use, calculated using the value iteration algorithm. At the time of publishing, classical value iteration was seen as too slow and states took too long to converge, and hence a ‘layered’ approach of working backwards was used. This works by using value iteration on subsets of the state space, ensuring these converge before moving onto the next subset. The paper found that the optimal policy is non‐smooth and includes unusual and unintuitive features.
 
+## Getting Started
+
+These instructions will get you a copy of the project up and running on your local machine for development and testing purposes.
+
+### Prerequisites
+
+- Python 3.8 or higher
+- `git`
+- `pip`
+
+### Clone the Repository
+
+```bash
+git clone https://github.com/Harry-Ell/609-CW3.git
+cd 609-CW3
+```
+
+### Set Up a Virtual Environment
+
+#### (Windows, PowerShell)
+```powershell
+python -m venv env
+.\env\Scripts\activate
+```
+
+#### (Unix)
+```bash
+python3 -m venv env
+source env/bin/activate
+```
+
+### Install Dependencies
+
+```bash
+pip install -r requirements.txt
+```
+
+### Run Tests
+
+```bash
+pytest
+```
+
+To deactivate the environment after use:
+
+```bash
+deactivate
+```
+
+
 ## Repository Overview
 
 ### notebook_writeup
