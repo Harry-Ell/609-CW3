@@ -1,111 +1,125 @@
 '''
-This script contains our code for mapping all of the reachable states in the space. 
+This script contains our code for mapping all of the reachable states in the space.
 
-In this script, we take the approach of direct simulation. We simulate playing a 
-variety of opponents by playing two optimal policies against each other, and 
-forcing player 2 to hold at random points in the game. This fills in the gaps in 
-the state space. 
+We take the approach of direct simulation: two optimal policies play against each other,
+but player 2 is forced to hold at random points in order to fill in gaps in the reachable state space.
 '''
-import random, sys, pickle
-import numpy as np 
+
+import random
+import sys
+import pickle
+import numpy as np
+from typing import Any
 
 # This makes imports around a directory a bit easier usually
 sys.path.append('..')
 
+
 def roll_die() -> int:
-    '''
-    Helper function to conduct a dice roll for us 
-    '''
-    return random.randint(1,6)
+    """
+    Helper function to simulate a fair 6-sided die roll.
 
-def game_pig(policy_player_1:np.ndarray, 
-             policy_player_2:np.ndarray, 
-             reachable:np.ndarray, 
-             hold_probability:float) -> np.array:
-    '''
-    Function to conduct a game of pig for us. 
-    
-    Arguments:
-        policy_player_1:np.array = numpy array containing 0s (do not roll) and 1s (roll) for player 1
-        policy_player_2:np.array = numpy array containing 0s (do not roll) and 1s (roll) for player 2
-        reachable:np.array = numpy array containing containing 0s (state not reached) and 1s (state reached) for player 2
-        hold_probability:float = Probability that player 2 holds at random to simulate variety of opponents.
+    Returns:
+        int: A random integer from 1 to 6.
+    """
+    return np.random.randint(1, 7)
 
-    Returns: 
-        reachable:np.array = Updated array of states that can be reached. 
-    '''
-    # initialise some variables which are useful for the game
-    scores = [0,0]
-    player = 0 
 
-    # enter a while loop for each game, set until completion of the game. 
+def game_pig(policy_player_1: np.ndarray,
+             policy_player_2: np.ndarray,
+             reachable: np.ndarray,
+             hold_probability: float) -> np.ndarray:
+    """
+    Simulates one game of Pig and updates reachable states for player 1.
+
+    Args:
+        policy_player_1 (np.ndarray): A 3D array [i][j][k] with 1 = roll, 0 = hold for player 1.
+        policy_player_2 (np.ndarray): A 3D array with the same structure for player 2.
+        reachable (np.ndarray): A 3D array tracking which states are reached (1) or not (0).
+        hold_probability (float): Probability that player 2 randomly decides to hold, simulating varied opponents.
+
+    Returns:
+        np.ndarray: The updated reachable array after one simulated game.
+    """
+    scores = [0, 0]
+    player = 0
+
     while max(scores) < 100:
         turn_total = 0
-        # turn logic, enter an infinite loop which is broken out of when turn change logic is hit
         while True:
             roll = roll_die()
-            if (player == 0 and policy_player_1.get((scores[0], scores[1], turn_total), 0)) or \
-               (player == 1 and policy_player_2.get((scores[1], scores[0], turn_total), 0)):
-                
-                # This makes it bank at random points, simulating a variety of sub optimal opponents 
+
+            if (player == 0 and policy_player_1[scores[0], scores[1], turn_total]) or \
+               (player == 1 and policy_player_2[scores[1], scores[0], turn_total]):
+
+                # Player 2 randomly chooses to hold (to simulate suboptimality)
                 if player == 1 and np.random.random() > hold_probability:
                     scores[player] += turn_total
                     break
-                # else if you roll a 1, then turn also ends
+
                 elif roll == 1:
                     turn_total = 0
                     break
-                # else keep on spinning
+
                 else:
                     turn_total += roll
-                    # if you are player 1 (player 0 given 0 indexing), we should add in the state you 
-                    # have just reached to this array
                     if player == 0:
-                        reachable[min(scores[player], 100), min(scores[player-1], 100), min(turn_total, 100)] = 1
-            # this logic is the player saying they do not want to roll. Hence, bank points accured up until now 
+                        # Record the reached state for player 1
+                        reachable[min(scores[player], 100), min(scores[player - 1], 100), min(turn_total, 100)] = 1
+
             else:
                 scores[player] += turn_total
-                # again, if you are player 1 (player 0 given 0 indexing), we should add in the state you 
-                # have just reached to this array
                 if player == 0:
-                    reachable[min(scores[player], 100), min(scores[player-1], 100), 0] = 1
+                    reachable[min(scores[player], 100), min(scores[player - 1], 100), 0] = 1
                 break
-        # swap players, return to upper while loop 
+
+        # Swap players
         player = 1 - player
-    # finally we only return all of the states that have been reached, since this is all we care about here. 
+
     return reachable
 
 
-def modelling_state_space(policy:np.array, 
-                          reachable:np.array, 
-                          iterations:int, 
-                          hold_prob:float) -> np.array:
-    '''
-    Wrapper function to call to interact with the above game code. 
-    Recursively reassigns the 'reachable' array with outputs of the function
+def modelling_state_space(policy: np.ndarray,
+                          reachable: np.ndarray,
+                          iterations: int,
+                          hold_prob: float) -> np.ndarray:
+    """
+    Simulates many games to explore reachable state space under stochastic variation.
 
-    Arguments:
-        policy:np.array = numpy array containing 0s (do not roll) and 1s (roll) for our players
-        reachable:np.array = numpy array containing containing 0s (state not reached) and 1s (state reached) for player 2
-        hold_probability:float = Probability that player 2 holds at random to simulate variety of opponents.
-    '''
+    Args:
+        policy (np.ndarray): A 3D policy array [i][j][k] for both players (shared policy).
+        reachable (np.ndarray): The running reachable-state map to update.
+        iterations (int): Number of game simulations to perform.
+        hold_prob (float): Probability player 2 will hold at random during their turn.
+
+    Returns:
+        np.ndarray: The updated reachable state space after simulation.
+    """
     for _ in range(iterations):
         reachable = game_pig(policy, policy, reachable, hold_prob)
     return reachable
 
 
-
-# Brute force mapping of reachable states 
+# Brute-force mapping of reachable states
 if __name__ == "__main__":
-    # read pickle file
-    with open('notebook_writeup/pickle_and_config_files/policy_dictionary.pkl', 'rb') as f:
-        policy = pickle.load(f)
+    # Generate the optimal policy 
+    from optimised_layered_vi import pig_layered_value_iteration
 
-    # initialising our reachable states array
+    die_size = 6
+    target_score = 100
+    max_turn = 100
+
+    _, policy = pig_layered_value_iteration(target_score=target_score,
+                                            die_sides=die_size,
+                                            max_turn=max_turn,
+                                            epsilon=1e-6)
+
+    # Initialise 3D array to track which (i, j, k) states are reached by player 1
     reachable_states = np.zeros((101, 101, 101))
+
     for prob in [0, 0.01, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8]:
-        reachable_states = modelling_state_space(reachable_states, iterations = 10**8, hold_prob = prob)
-        print(f'finished looping for p = {prob}', flush = True)
+        reachable_states = modelling_state_space(policy, reachable_states, iterations=10**6, hold_prob=prob)
+        print(f'finished looping for p = {prob}', flush=True)
 
     with open('notebook_writeup/pickle_and_config_files/reachable_states.pkl', 'wb') as f:
         pickle.dump(reachable_states, f)

@@ -1,141 +1,141 @@
 '''
 This is an implementation of the layered value iteration approach found in 
 the paper. We make use of numba to precompile for loops and eliminate any 
-python overhead for the loop computations
+python overhead for the loop computations.
 '''
 
 import numpy as np
 from numba import njit
+from typing import Tuple
 
 
 @njit
-def _init_V_policy(target_score:int, 
-                   max_turn:int) -> tuple[np.array, np.array]:
-    '''
-    Helper function which will populate an array of possible states to which we 
-    update the values and policy for. We preallocate to reduce overhead from 
-    assigning extra memory
+def _init_V_policy(target_score: int, max_turn: int) -> Tuple[np.ndarray, np.ndarray]:
+    """
+    Initialises the value and policy arrays for all reachable states.
 
-    Arguments:
-        target_score:int = number of points up to which we play the game
-        max_turn:int = maximum number of unbanked points to keep the state space trim
-        
-    Returns: 
-        Outputs:tuple[np.array, np.array] = Empty value array and policy array  
-    '''
-    V      = np.zeros((target_score+1, target_score+1, max_turn+1)) # initialise the values at 0
-    policy = np.ones((target_score+1, target_score+1, max_turn+1), np.int64) # initialise the policy to always roll
+    Args:
+        target_score (int): The score required to win the game.
+        max_turn (int): Maximum number of unbanked points to track (limits state space).
 
-    # set the terminal states
-    for ps in range(target_score+1):
-        for os in range(target_score+1):
-            for t in range(max_turn+1):
+    Returns:
+        Tuple[np.ndarray, np.ndarray]: Zero-initialised value array and default policy (all roll).
+    """
+    V = np.zeros((target_score + 1, target_score + 1, max_turn + 1))
+    policy = np.ones((target_score + 1, target_score + 1, max_turn + 1), np.int64)
+
+    for ps in range(target_score + 1):
+        for os in range(target_score + 1):
+            for t in range(max_turn + 1):
                 if ps + t >= target_score:
-                    V[ps, os, t]      = 1.0 # terminal states in which we win are given a reward (value) of 1
+                    V[ps, os, t] = 1.0
                     policy[ps, os, t] = 0
                 elif os >= target_score:
-                    V[ps, os, t] = 0.0 # terminal states in which we lose are given a reward (value) of 0
+                    V[ps, os, t] = 0.0
     return V, policy
 
-# Core layered value-iteration
+
 @njit
-def _layered_vi(V:np.array, 
-                policy:np.array, 
-                target_score:int, 
-                die_sides:int, 
-                max_turn:int, 
-                epsilon:float) -> tuple[np.array, np.array]:
-    '''
-    Layered backtracking function as done in the paper. 
+def _layered_vi(V: np.ndarray,
+                policy: np.ndarray,
+                target_score: int,
+                die_sides: int,
+                max_turn: int,
+                epsilon: float) -> Tuple[np.ndarray, np.ndarray]:
+    """
+    Executes layered value iteration over all states using backward induction.
 
-    @njit decorator precompiles this for loop for us for far more efficient computation. 
-    This reduces the run time by around a factor of 40.
+    Args:
+        V (np.ndarray): Value function array (updated in place).
+        policy (np.ndarray): Policy array (0 = hold, 1 = roll).
+        target_score (int): Score threshold to win the game.
+        die_sides (int): Number of faces on the die.
+        max_turn (int): Max turn total tracked.
+        epsilon (float): Convergence threshold for iteration.
 
-    Arguments:
-        V:np.array = Value function, object which is sequentially updated. 
-        policy:np.array = Policy array which can be extracted from V
-        target_score:int = number of points up to which we play the game
-        max_turn:int = maximum number of unbanked points to keep the state space trim
-        epsilon:float = Tolerance at which convergence is assumed to be reached, and 
-                        iteration of state space 
-        
-    Returns: 
-        Outputs:tuple[np.array, np.array] = Empty value array and policy array  
-    '''
+    Returns:
+        Tuple[np.ndarray, np.ndarray]: The converged value and policy arrays.
+    """
+    roll_values = np.arange(1, die_sides + 1)
+    roll_prob = 1.0 / die_sides
 
-
-    # small fixed array rather than Python list
-    roll_values = np.arange(1, die_sides+1) # the possible roll values, based on the size of the die
-    roll_prob   = 1.0 / die_sides
-
-    # we go from high sums to low
-    for score_sum in range(2*target_score-1, -1, -1):
+    for score_sum in range(2 * target_score - 1, -1, -1):
         converged = False
         while not converged:
             max_diff = 0.0
 
-            # loop over all (ps, os) with ps+os == score_sum
             p_min = max(0, score_sum - target_score + 1)
             p_max = min(target_score, score_sum)
-            for ps in range(p_min, p_max+1):
+
+            for ps in range(p_min, p_max + 1):
                 os = score_sum - ps
-                if ps >= target_score or os >= target_score: # the game has ended
+                if ps >= target_score or os >= target_score:
                     continue
 
-                for t in range(max_turn+1):
-                    if ps + t >= target_score or os >= target_score: # the game has ended from our turn
+                for t in range(max_turn + 1):
+                    if ps + t >= target_score or os >= target_score:
                         continue
 
-                    # --- ROLL value ---
+                    # Compute expected value of rolling
                     roll_value = 0.0
                     for k in range(roll_values.shape[0]):
                         r = roll_values[k]
                         if r == 1:
-                            roll_value += roll_prob * (1.0 - V[os, ps, 0]) # the update to the roll value given that we roll a 0 (and lose our points)
+                            roll_value += roll_prob * (1.0 - V[os, ps, 0])
                         else:
                             new_t = t + r
-                            if ps + new_t >= target_score: # the updates to the roll value given that we do not roll a 1
-                                roll_value += roll_prob * 1.0 # update with a value of 1 if we end up winning the game
+                            if ps + new_t >= target_score:
+                                roll_value += roll_prob * 1.0
                             elif new_t <= max_turn:
-                                roll_value += roll_prob * V[ps, os, new_t] # otherwise, update with the value of the state we end up in
+                                roll_value += roll_prob * V[ps, os, new_t]
 
-                    # --- HOLD value ---
+                    # Compute value of holding
                     if ps + t >= target_score:
-                        hold_value = 1.0 # the update to holding if we have already won
+                        hold_value = 1.0
                     elif os >= target_score:
-                        hold_value = 0.0 # the update to holding if we have lost
+                        hold_value = 0.0
                     elif os + ps + t > score_sum:
-                        hold_value = 1.0 - V[os, ps + t, 0] # the update to holding if we have won from this turn
+                        hold_value = 1.0 - V[os, ps + t, 0]
                     else:
-                        hold_value = 0.0 # otherwise, no update to the hold value
+                        hold_value = 0.0
 
-                    # choose best
+                    # Select better action
                     if roll_value >= hold_value:
-                        new_v      = roll_value
+                        new_v = roll_value
                         policy_val = 1
                     else:
-                        new_v      = hold_value
+                        new_v = hold_value
                         policy_val = 0
 
-                    # update & track convergence
                     diff = abs(V[ps, os, t] - new_v)
                     if diff > max_diff:
                         max_diff = diff
 
-                    V[ps, os, t]      = new_v
+                    V[ps, os, t] = new_v
                     policy[ps, os, t] = policy_val
 
             if max_diff < epsilon:
                 converged = True
+
     return V, policy
 
-# wrapper function to call precompiled other functions
-def pig_layered_value_iteration(
-    target_score=15,
-    die_sides=6,
-    max_turn=15,
-    epsilon=1e-6
-):
+
+def pig_layered_value_iteration(target_score: int = 15,
+                                die_sides: int = 6,
+                                max_turn: int = 15,
+                                epsilon: float = 1e-6) -> Tuple[np.ndarray, np.ndarray]:
+    """
+    Wrapper to perform layered value iteration from scratch.
+
+    Args:
+        target_score (int, optional): Score needed to win. Defaults to 15.
+        die_sides (int, optional): Number of sides on the die. Defaults to 6.
+        max_turn (int, optional): Maximum turn total to represent. Defaults to 15.
+        epsilon (float, optional): Convergence threshold. Defaults to 1e-6.
+
+    Returns:
+        Tuple[np.ndarray, np.ndarray]: Final value and policy arrays.
+    """
     V, policy = _init_V_policy(target_score, max_turn)
     V, policy = _layered_vi(V, policy, target_score, die_sides, max_turn, epsilon)
     return V, policy

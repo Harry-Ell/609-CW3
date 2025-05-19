@@ -53,7 +53,7 @@ This may also need to be followed by refreshing the available kernels in the wor
 ```bash
 pytest
 ```
-An error message may follow if you have not ran the command as intended earlier. 
+An error message may follow if you have not ran the command to move one layer down the file path as intended earlier. 
 ```bash 
 cd 609-CW3 
 ```
@@ -67,27 +67,39 @@ deactivate
 
 ## Repository Overview
 
-### notebook_writeup
-This contains the finalised figures and the report in submission.ipynb. All work from the other folders have been reproduced in a final form in this folder.
-#### Submission.ipynb
-This is the final notebook submission for the coursework.
-#### optimised_layered_vi.py
-Implementation of the layered value iteration approach found in the paper
-#### map_reachable_states.py
-Code for finding all possible reachable states when using the optimal policy.
-#### plotting_tools
-General plotting code for generates plots for the report.
-#### Competition.py
-Class for simulation to reproduce metrics on winning probabilities.
-#### Piglet.py
-Class for value iteration for Piglet game to reproduce the convergence graph.
+Below is a breakdown of the contents of this repository, including scripts, tests, and supplementary notebooks:
 
-### layered_VI
-This contains layered value iteration code and files for the solution generated used during the coursework.
+###  `development_steps/`
+Contains notebooks used during development and prototyping of various approaches:
 
-### plots_and_graphs
-Reproduction of reachable states plot.
+- **`layered_value_iteration.ipynb`** - Notebook exploring the logic and performance of the layered value iteration algorithm.
+- **`piglet.ipynb`** – Preliminary notebook working through the simplified "Piglet" game logic.
 
-### simulation_study
-A simulation approach for reproducing metrics on winning probabilities for the optimal solution of Pig and reproducing Piglet results.
+###  `notebook_writeup/`
+Houses the final project and data sets used in analysis:
 
+- **`presentation_figs/`** – Any figures included in the final presentation or summary plots.
+
+- **`pickle_and_config_files/`** – Contains configuration files and precomputed data
+
+- `competition.py` -  Class for simulation to reproduce metrics on winning probabilities, including defintion of opponents.
+
+- `competition.py` - Simulates head-to-head matches between different policies, including opponent strategies.
+
+- `map_reachable_states.py` - Generates reachable state-space data by simulating play using the optimal policy and varied opponents.
+
+- `optimised_layered_vi.py` - Implementation of the layered value iteration algorithm used to solve the full Pig game efficiently.
+
+- `piglet.py` - A simplified tabular value iteration solver for a toy version of the Pig game ("Piglet"), used for testing ideas.
+
+- `plotting_tools.py` - Scripts for generating 3D isosurface plots of policy and value functions using Plotly.
+
+- `submission.ipynb` - An alternative version of the final submission notebook, typically created to separate plots or experiments.
+
+### 📁 `tests/`
+Unit tests for ensuring correctness and reproducibility:
+
+- **`data/`** – Contains test fixtures or test-specific data files (e.g., `.pkl` comparisons).
+- `test_pig_policy.py` – Tests for the full Pig value iteration strategy.
+- `test_piglet_policy.py` – Tests for the simplified Piglet solver.
+- `conftest.py` – Ensures tests are run from the repository root and configures shared test logic.
