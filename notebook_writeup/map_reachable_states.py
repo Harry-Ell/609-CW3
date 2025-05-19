@@ -89,6 +89,9 @@ def modelling_state_space(policy:np.array,
         reachable:np.array = numpy array containing containing 0s (state not reached) and 1s (state reached) for player 2
         hold_probability:float = Probability that player 2 holds at random to simulate variety of opponents.
     '''
+    for _ in range(iterations):
+        reachable = game_pig(policy, policy, reachable, hold_prob)
+    return reachable
 
 
 

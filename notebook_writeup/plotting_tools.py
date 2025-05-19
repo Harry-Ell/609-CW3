@@ -1,11 +1,11 @@
 '''
-plotting code 
+plotting code
 '''
 import numpy as np
 import plotly.graph_objects as go
 
 
-def plot_isosurface_from_array(array, isovalues=[0.2, 0.4, 0.6, 0.8]):
+def plot_isosurface_from_array(array, isovalues=[0.2, 0.4, 0.6, 0.8], save_as=None, perspective = [1,1,1]):
     # Drop the last slice as before
     array = array[:, :-1, :]
     i_dim, j_dim, k_dim = array.shape
@@ -36,9 +36,9 @@ def plot_isosurface_from_array(array, isovalues=[0.2, 0.4, 0.6, 0.8]):
     fig.update_layout(
         font=dict(family='serif'),
         title=dict(
-            text='Isosurface Plot of Reachable States',
+            text='Contours of Equal Win Probability',
             x=0.5,
-            y=0.85,
+            y=0.75,
             xanchor='center',
             font=dict(size=20, family='serif')
         ),
@@ -67,13 +67,14 @@ def plot_isosurface_from_array(array, isovalues=[0.2, 0.4, 0.6, 0.8]):
                 showbackground=True,
                 backgroundcolor='rgba(240,240,240,0.5)'
             )
-        )
+        ), scene_camera=dict(eye=dict(x=perspective[0], y=perspective[1], z=perspective[2]))
     )
-
+    if save_as:
+        fig.write_image(save_as, scale = 3)
     fig.show()
 
 
-def generate_box_plots(array, title = 'Isosurface Plot of Reachable States', pad = False):
+def generate_box_plots(array, title = 'Isosurface Plot of Reachable States', pad = False, save_as=None, perspective = [1,1,1]):
     if pad == True:
         padded = np.pad(array,
                         pad_width=1,
@@ -137,7 +138,8 @@ def generate_box_plots(array, title = 'Isosurface Plot of Reachable States', pad
                 showbackground=True,
                 backgroundcolor='rgba(240,240,240,0.5)'
             )
-        )
+        ), scene_camera=dict(eye=dict(x=perspective[0], y=perspective[1], z=perspective[2]))
     )
-
+    if save_as:
+        fig.write_image(save_as, scale = 3)
     fig.show()
