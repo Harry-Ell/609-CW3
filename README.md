@@ -7,7 +7,7 @@ These instructions will get you a copy of the project up and running on your loc
 
 ### Prerequisites
 
-- Python 3.8 or higher
+- Python 3.10 or higher
 - `git`
 - `pip`
 
@@ -38,9 +38,9 @@ source env/bin/activate
 pip install -r requirements.txt
 ```
 
-### (Optional) Using Jupyter Notebooks
+### Updating available kernels for using Jupyter Notebooks
 
-If you're working in Jupyter notebooks, you may want to register this virtual environment as a kernel:
+The submission is given inside of `notebook_writeup/submission.ipynb`. It is possible that the new kernel has not yet been recognised. In this case, you can add it with the below command. 
 
 ```bash
 python -m ipykernel install --user --name=env --display-name "Python (env)"
@@ -67,7 +67,7 @@ deactivate
 
 ## Repository Overview
 
-Below is a breakdown of the contents of this repository, including scripts, tests, and supplementary notebooks:
+Below is a breakdown of the contents of this repository, including scripts, tests, and supplementary notebooks. The intended point of entry to the repository is our submission notebook,  `notebook_writeup/submission.ipynb`. A brief explanation of all folders and sub files is given below. 
 
 ###  `development_steps/`
 Contains notebooks used during development and prototyping of various approaches:
