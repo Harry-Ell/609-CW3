@@ -38,6 +38,17 @@ source env/bin/activate
 pip install -r requirements.txt
 ```
 
+### (Optional) Using Jupyter Notebooks
+
+If you're working in Jupyter notebooks, you may want to register this virtual environment as a kernel:
+
+```bash
+pip install ipykernel
+python -m ipykernel install --user --name=env --display-name "Python (env)"
+```
+
+This may also need to be followed by refreshing the available kernels in the workspace.
+
 ### Run Tests
 
 ```bash
