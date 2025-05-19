@@ -82,21 +82,19 @@ Houses the final project and data sets used in analysis:
 
 - **`pickle_and_config_files/`** – Contains configuration files and precomputed data
 
-- `competition.py` -  Class for simulation to reproduce metrics on winning probabilities, including defintion of opponents.
-
 - `competition.py` - Simulates head-to-head matches between different policies, including opponent strategies.
 
 - `map_reachable_states.py` - Generates reachable state-space data by simulating play using the optimal policy and varied opponents.
 
 - `optimised_layered_vi.py` - Implementation of the layered value iteration algorithm used to solve the full Pig game efficiently.
 
-- `piglet.py` - A simplified tabular value iteration solver for a toy version of the Pig game ("Piglet"), used for testing ideas.
+- `piglet.py` - A simplified value iteration solver for a toy version of the Pig game
 
 - `plotting_tools.py` - Scripts for generating 3D isosurface plots of policy and value functions using Plotly.
 
-- `submission.ipynb` - An alternative version of the final submission notebook, typically created to separate plots or experiments.
+- `submission.ipynb` - The final submission notebook, where all figures and analysis given in the paper is reproduced. .
 
-### 📁 `tests/`
+### `tests/`
 Unit tests for ensuring correctness and reproducibility:
 
 - **`data/`** – Contains test fixtures or test-specific data files (e.g., `.pkl` comparisons).
