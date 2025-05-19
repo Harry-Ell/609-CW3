@@ -7,11 +7,8 @@ import matplotlib as mpl
 import copy
 import sys
 
-# this makes imports more reliable when importing from a variety of places.
+# # this makes imports more reliable when importing from a variety of places.
 sys.path.append('..')
-
-# some nice and optional formatting tools
-mpl.rc_file('pickle_and_config_files/matplotlibrc')
 
 
 class PigletSolver:
@@ -84,4 +81,15 @@ class PigletSolver:
         self.savefig = savefig
         self._value_iterate()
         if convergence_plots:
+            # some nice and optional formatting tools
+            mpl.rc_file('pickle_and_config_files/matplotlibrc')    
             self._return_convergence_plots()
+
+    def get_policy(self):
+        '''
+        This final method was only added for the purpose of 
+        extracting the polcy so we can compare it with tests. 
+
+        It is not called within usual functionality of the class
+        '''
+        return self.flip

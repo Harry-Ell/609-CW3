@@ -43,7 +43,6 @@ pip install -r requirements.txt
 If you're working in Jupyter notebooks, you may want to register this virtual environment as a kernel:
 
 ```bash
-pip install ipykernel
 python -m ipykernel install --user --name=env --display-name "Python (env)"
 ```
 
@@ -53,6 +52,10 @@ This may also need to be followed by refreshing the available kernels in the wor
 
 ```bash
 pytest
+```
+An error message may follow if you have not ran the command as intended earlier. 
+```bash 
+cd 609-CW3 
 ```
 
 To deactivate the environment after use:
